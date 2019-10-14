@@ -131,7 +131,11 @@ Map.centerObject(AOI, 8.5);
 
 // Add Visual Layers
 for (var no = startM-1; no <= endM-1; no++){
-  var bandMax = months2bands.mask().reduce(ee.Reducer.max());
+  // var bandMax = months2bands.select([monlist.get(no)]).mask()
+  //     .reduceRegion({reducer:ee.Reducer.max(), scale:120, geometry:AOI, maxPixels: 1e13, bestEffort: true})
+  //     .get(monlist.get(no));
+  // print(bandMax)
+  // var vis = {min:0, max: bandMax.getInfo(), palette:['FFFFFF', palette.get(no).getInfo()]};
   var vis = {min:0, max: 180, palette:['FFFFFF', palette.get(no).getInfo()]};
   Map.addLayer(months2bands.select([monlist.get(no)]), vis, monlist.get(no).getInfo(), 0);
 }
