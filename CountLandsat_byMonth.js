@@ -124,7 +124,7 @@ var monthsN = ee.List.sequence(startM-1, endM-1);
 var mounthly_count = ee.ImageCollection(months.map(months_F));
 
 var months2bands = mounthly_count.toBands().rename(monthsN.map(monSelect));
-
+    months2bands = months2bands.clip(AOI)
 
 Map.centerObject(AOI, 8.5); 
 
