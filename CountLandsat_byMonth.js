@@ -18,7 +18,7 @@
 # :Output:      Visual Layers (one month - one layer; separately scalled and collored)
 #               multilayer image exported to Drive (one month - one band)
 #
-# :Updates:    
+# :Updates:     2019-10-15:   No duplicated based of He Yin's code 
 # 
 # :2Do:        
 #
@@ -37,7 +37,7 @@ var startM = 1
 var endM = 12
 
 
-// AOI definition
+
 var AOI =  ee.Geometry.Polygon(
         [[[-89.73775572597816, 43.444981295302384], [-89.73775572597816, 42.80350046836383],
           [-88.55123228847816, 42.80350046836383],  [-88.55123228847816, 43.444981295302384]]]);
@@ -69,7 +69,7 @@ var l4 = ee.ImageCollection('LANDSAT/LT04/C01/T1_SR').filter(ee.Filter.calendarR
 var cloudMaskL457 = function(in_image) {
   var qa = in_image.select('pixel_qa');
   var cloud = qa.bitwiseAnd(1 << 5)
-          .and(qa.bitwiseAnd(1 << 7))
+          .or(qa.bitwiseAnd(1 << 7))
           .or(qa.bitwiseAnd(1 << 3))
           .or(qa.bitwiseAnd(1 << 4));
   var mask2 = in_image.mask().reduce(ee.Reducer.min());  // Remove edge pixels that don't occur in all bands
@@ -93,10 +93,24 @@ var cloudMaskL8 = function(in_image) {
   return in_image.updateMask(cloud.not()).updateMask(mask2);
 };
 
+var DateBand_F = function(image){
+  var date = ee.Number.parse(image.date().format('YYYYMMdd'));
+  var DateBand = ee.Image.constant(date).uint32().rename('date');
+  DateBand = DateBand.updateMask(image.select('B4').mask());
+      image = image.addBands(DateBand.updateMask(image.select('B4')));
+  return image.select('date');
+};
 
-var months_F = function(m){
-  var m_count = col_B4.filter(ee.Filter.calendarRange(m,m,'month')).count();
-  return ee.Image(m_count);
+// does not exclude duplicates
+// var months_F = function(m){
+//   var m_count = col_B4.filter(ee.Filter.calendarRange(m,m,'month')).count();
+//   return ee.Image(m_count);
+// };
+
+// does exclude duplicates
+var months_noDup_F = function(m){
+  var m_count_dis = col_B4.filter(ee.Filter.calendarRange(m,m,'month')).reduce(ee.Reducer.countDistinct()).rename('no-duplicates');
+  return ee.Image(m_count_dis);
 };
 
 var monSelect = function(mo){
@@ -121,10 +135,10 @@ var months = ee.List.sequence(startM, endM);
 var monthsN = ee.List.sequence(startM-1, endM-1);
 
 
-var mounthly_count = ee.ImageCollection(months.map(months_F));
+var mounthly_count = ee.ImageCollection(months.map(months_noDup_F));
 
 var months2bands = mounthly_count.toBands().rename(monthsN.map(monSelect));
-    months2bands = months2bands.clip(AOI)
+
 
 Map.centerObject(AOI, 8.5); 
 
@@ -139,7 +153,7 @@ for (var no = startM-1; no <= endM-1; no++){
   var vis = {min:0, max: 180, palette:['FFFFFF', palette.get(no).getInfo()]};
   Map.addLayer(months2bands.select([monlist.get(no)]), vis, monlist.get(no).getInfo(), 0);
 }
-
+// print(months2bands.select('apr').reduceRegion({reducer:ee.Reducer.max(), scale:120, geometry:AOI, maxPixels: 1e13, bestEffort: true}).get(monlist.get(3)))
 Map.setOptions('HYBRID');
 
 
