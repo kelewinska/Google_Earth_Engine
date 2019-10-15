@@ -17,7 +17,7 @@
 # :Output:      Visual Layers (one year - one layer; separately scalled and collored)
 #               multilayer image exported to Drive (one year - one band)
 #
-# :Updates:    
+# :Updates:     2019-10-15:   No duplicated based of He Yin's code
 # 
 # :2Do:        
 #
@@ -91,13 +91,23 @@ var cloudMaskL8 = function(in_image) {
   return in_image.updateMask(cloud.not()).updateMask(mask2);
 };
 
+var DateBand_F = function(image){
+  var date = ee.Number.parse(image.date().format('YYYYMMdd'));
+  var DateBand = ee.Image.constant(date).uint32().rename('date')
+  DateBand = DateBand.updateMask(image.select('B4').mask())
+      image = image.addBands(DateBand.updateMask(image.select('B4')));
+  return image.select('date').selfMask()
+};
 
 var years_F = function(y){
   var y_count = col_B4.filter(ee.Filter.calendarRange(y,y,'year')).count().rename(ee.String(y).slice(0,4));
   return ee.Image(y_count);
 };
 
-
+var years_noDup_F = function(y){
+  var y_count_dis = col_B4.filter(ee.Filter.calendarRange(y,y,'year')).reduce(ee.Reducer.countDistinct()).rename('no-duplicates');
+  return ee.Image(y_count_dis);
+};
 
 // ### CODE ### \\
 
@@ -115,13 +125,13 @@ var years = ee.List.sequence(startY, endY);
 var yearsN = ee.List.sequence(startY-1, endY-1);
 
 
-var yearly_count = ee.ImageCollection(years.map(years_F));
+var yearly_count = ee.ImageCollection(years.map(years_noDup_F));
 
 var years2bands = yearly_count.toBands().rename(years.map(function(y){
                                                 return ee.String(y).slice(0,4);
                                                 }));
 
-    years2bands = years2bands.clip(AOI);
+    years2bands = years2bands.clip(AOI).int();
 
 Map.centerObject(AOI, 7); 
 
