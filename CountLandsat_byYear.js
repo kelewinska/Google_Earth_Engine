@@ -41,7 +41,6 @@ var AOI =  ee.Geometry.Polygon(
         [[[-89.73775572597816, 43.444981295302384], [-89.73775572597816, 42.80350046836383],
           [-88.55123228847816, 42.80350046836383],  [-88.55123228847816, 43.444981295302384]]]);
 
-var EcoReg = ee.FeatureCollection("users/kelewinska/Caucasus_Georegion");
 
 // ### ENVIRONMENT ### \\
 
