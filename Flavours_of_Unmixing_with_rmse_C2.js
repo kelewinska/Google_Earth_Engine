@@ -79,12 +79,13 @@ var cloudMaskL8 = function(in_image) {
 // OLI to ETM function
   // after doi:10.1016/j.rse.2015.12.024
 var OLI2ETMf = function(image) {
-  var blue = image.expression('0.0183 + 0.8850 * (SR_B2*0.0000275-0.2)*10000', {'SR_B2':image.select('SR_B2')});
-  var green = image.expression('0.0123 + 0.9317 * (SR_B3*0.0000275-0.2)*10000', {'SR_B3':image.select('SR_B3')});
-  var red = image.expression('0.0123 + 0.9372 * (SR_B4*0.0000275-0.2)*10000', {'SR_B4':image.select('SR_B4')});
-  var nir = image.expression('0.0448 + 0.8339 * (SR_B5*0.0000275-0.2)*10000', {'SR_B5':image.select('SR_B5')});
-  var swir1 = image.expression('0.0306 + 0.8639 * (SR_B6*0.0000275-0.2)*10000', {'SR_B6':image.select('SR_B6')});
-  var swir2 = image.expression('0.0116 + 0.9165 * (SR_B7*0.0000275-0.2)*10000', {'SR_B7':image.select('SR_B7')});
+var blue = image.expression('0.0183*10000 + 0.8850 * (SR_B2*0.0000275-0.2)*10000', {'SR_B2':image.select('SR_B2')});
+  var green = image.expression('0.0123*10000 + 0.9317 * (SR_B3*0.0000275-0.2)*10000', {'SR_B3':image.select('SR_B3')});
+  var red = image.expression('0.0123*10000 + 0.9372 * (SR_B4*0.0000275-0.2)*10000', {'SR_B4':image.select('SR_B4')});
+  var nir = image.expression('0.0448*10000 + 0.8339 * (SR_B5*0.0000275-0.2)*10000', {'SR_B5':image.select('SR_B5')});
+  var swir1 = image.expression('0.0306*10000 + 0.8639 * (SR_B6*0.0000275-0.2)*10000', {'SR_B6':image.select('SR_B6')});
+  var swir2 = image.expression('0.0116*10000 + 0.9165 * (SR_B7*0.0000275-0.2)*10000', {'SR_B7':image.select('SR_B7')});
+
   // *0.0000275 -0.2
   var temp = ee.Image(image).addBands(blue).addBands(green).addBands(red).addBands(nir).addBands(swir1).addBands(swir2);
 
